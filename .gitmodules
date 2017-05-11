@@ -1,0 +1,6 @@
+[submodule "Arduino-PID-Library"]
+	path = Arduino-PID-Library
+	url = https://github.com/br3ttb/Arduino-PID-Library/
+[submodule "Adafruit_MAX31856"]
+	path = Adafruit_MAX31856
+	url = https://github.com/adafruit/Adafruit_MAX31856
