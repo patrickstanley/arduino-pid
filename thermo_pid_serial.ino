@@ -93,7 +93,7 @@ void loop() {
   }
 
 //turn the output pin on/off based on pid output
- if(millis() - windowStartTime>WindowSize)
+ if(millis() - windowStartTime>=WindowSize)
   { //time to shift the Relay Window
     windowStartTime += WindowSize;
   }
