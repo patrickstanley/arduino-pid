@@ -16,6 +16,7 @@ unsigned long prevprintMillis = 0;
 const long printdelay = 5000; //delay amount before printing via serial
 unsigned long windowStartTime;
 unsigned long prevRampTimer = 0;
+unsigned long MaxOP = .95;
 
 PID myPID(&Input, &Output, &workingSet,250,50,8, DIRECT); //Specify the links and initial tuning parameters
 
@@ -37,7 +38,7 @@ void setup() {
   workingSet = 20;
   Setpoint = 20;
 
-  myPID.SetOutputLimits(0, WindowSize); //tell the PID to range between 0 and the full window size
+  myPID.SetOutputLimits(0, MaxOP * WindowSize); //tell the PID to range between 0 and the full window size
   myPID.SetMode(AUTOMATIC);  //turn the PID on
 
 }
