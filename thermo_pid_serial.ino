@@ -1,5 +1,6 @@
 #include <Adafruit_MAX31856.h> //loads library for thermocouple reader
 #include <PID_v1.h> //loads PID library
+#include <RunningAverage.h> //loads class for Running Avgerage calculations
 #define RelayPin 2 //set pin number which is connected to power relay for device
 
 const byte numChars = 32;
@@ -16,7 +17,9 @@ unsigned long prevprintMillis = 0;
 const long printdelay = 5000; //delay amount before printing via serial
 unsigned long windowStartTime;
 unsigned long prevRampTimer = 0;
-unsigned long MaxOP = .95;
+unsigned long MaxOP = .95; // Max Operating Power
+
+RunningAverage myRA(10); //Set up running average with # of measurements
 
 PID myPID(&Input, &Output, &workingSet,250,50,8, DIRECT); //Specify the links and initial tuning parameters
 
@@ -34,13 +37,14 @@ void setup() {
 
   windowStartTime = millis(); //start timer for duty cycle window
 
+  myRA.clear(); // explicitly start clean
+
   //initialize the variables we're linked to
   workingSet = 20;
   Setpoint = 20;
 
   myPID.SetOutputLimits(0, MaxOP * WindowSize); //tell the PID to range between 0 and the full window size
   myPID.SetMode(AUTOMATIC);  //turn the PID on
-
 }
 
 //fuction to recieve data via serial and process when endmarker is recieved
@@ -49,10 +53,8 @@ void recvWithEndMarker() {
  char endMarker = '\n'; //define line endmarker for client
  char rc;
 
- // if (Serial.available() > 0) {
   while (Serial.available() > 0 && newData == false) {
     rc = Serial.read();
-
     if (rc != endMarker) {
       receivedChars[ndx] = rc;
       ndx++;
@@ -82,8 +84,8 @@ void showNewData() {
 void loop() {
   recvWithEndMarker(); //check for new setpoint
   showNewData(); //sets new setpoint and displays it
-
-  Input = max.readThermocoupleTemperature(); //read thermocouple
+  myRA.addValue(max.readThermocoupleTemperature());//add themocouple read to rolling average
+  Input = myRA.getAverage();//sets PID input to rolling average value
   myPID.Compute(); //calculate PID output
 
 //print delay for serial output so not to flood logs
